@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/usr/bin/python3
 import cairo
 
 import gi
@@ -15,6 +15,7 @@ import subprocess
 import sys
 import argparse
 import json
+import os
 import time
 
 DESKTOP_DRAG_STRESS_TOY = True
@@ -46,7 +47,7 @@ def set_border_rgba(args):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", "-c", type=str, help="The path to the config file")
+    parser.add_argument("--config", "-c", default='/home/wadekiny/.config/xborders/config.json', type=str, help="The path to the config file")
     parser.add_argument(
         "--border-radius", type=int, default=14, help="The border radius, in pixels"
     )
@@ -108,17 +109,21 @@ def get_args():
     # Extract the literal values
 
     if args.config is not None:
-        with open(args.config, "r") as f:
-            raw = f.read().replace("-", "_")
-            dat = json.loads(raw)
-            for ident in dat:
-                if ident == "border_rgba":
-                    args.border_rgba = dat[ident]
-                    set_border_rgba(args)
-                else:
-                    args.__dict__[ident] = dat[
-                        ident
-                    ]  # Idea gotten from here: https://stackoverflow.com/a/1325798
+        if os.path.exists(args.config):
+            print('Load config file{}'.format(args.config))
+            with open(args.config, "r") as f:
+                raw = f.read().replace("-", "_")
+                dat = json.loads(raw)
+                for ident in dat:
+                    if ident == "border_rgba":
+                        args.border_rgba = dat[ident]
+                        set_border_rgba(args)
+                    else:
+                        args.__dict__[ident] = dat[
+                            ident
+                        ]  # Idea gotten from here: https://stackoverflow.com/a/1325798
+        else:
+            print('No config file:{}'.format(args.config))
 
     global DESKTOP_DRAG_STRESS_TOY
     global BORDER_RADIUS
@@ -154,6 +159,8 @@ def get_args():
 
 
 def get_win(wnck_screen):
+    if wnck_screen.get_active_window() == None:
+        return None
     x, y, width, height = wnck_screen.get_active_window().get_geometry()
     return ((x, y), (width, height))
 
@@ -290,7 +297,7 @@ class Highlight(Gtk.Window):
             self.notified_compositor = False;
         ctx.save()
 
-        if (not is_fullscreen(self.wnck_screen)):
+        if (self.wnck_screen.get_active_window() != None and not is_fullscreen(self.wnck_screen)):
             win_data = get_win(self.wnck_screen)
             if win_data != None:
                 x, y, w, h = win_data[0][0], win_data[0][1], win_data[1][0], win_data[1][1]
