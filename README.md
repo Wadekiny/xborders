@@ -1,5 +1,12 @@
 # xborder
 Active window border replacement for window managers.
+forked from SilverTux/xborder 
+
+## 修复了几个bug
+1. 鼠标放到搜狗拼音输入法fcitx上导致边框消失，在xborders中添加了判断条件。
+2. xborders中的python路径不匹配，改了
+3. `draw.py` 中参数声明在我这会报错，注释掉了
+4. 添加了默认读取配置文件`/home/wadekiny/.config/xborders/config.json`
 
 ## Usage
 ```sh
